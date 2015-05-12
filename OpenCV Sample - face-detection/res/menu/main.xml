@@ -1,0 +1,64 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.opencv.activity.MainActivity" >
+
+    <item
+        android:id="@+id/start_fase_detection"
+        android:orderInCategory="1"
+        android:showAsAction="always"
+        android:title="Start Dection"/>
+    <item
+        android:id="@+id/face_size_sub_menu"
+        android:orderInCategory="4"
+        android:showAsAction="ifRoom"
+        android:title="FaceSize">
+        <menu>
+            <item
+                android:id="@+id/face_size_50"
+                android:orderInCategory="1"
+                android:showAsAction="ifRoom"
+                android:title="FaceSize 50%"/>
+            <item
+                android:id="@+id/face_size_40"
+                android:orderInCategory="2"
+                android:showAsAction="ifRoom"
+                android:title="FaceSize 40%"/>
+            <item
+                android:id="@+id/face_size_30"
+                android:orderInCategory="3"
+                android:showAsAction="ifRoom"
+                android:title="FaceSize 30%"/>
+            <item
+                android:id="@+id/face_size_20"
+                android:orderInCategory="4"
+                android:showAsAction="ifRoom"
+                android:title="FaceSize 20%"/>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/filter_sub_menu"
+        android:orderInCategory="3"
+        android:showAsAction="ifRoom"
+        android:title="Filters">
+        <menu>
+            <item
+                android:id="@+id/filter_erode"
+                android:orderInCategory="1"
+                android:showAsAction="ifRoom"
+                android:title="Enabled Erode"/>
+            <item
+                android:id="@+id/filter_dilate"
+                android:orderInCategory="4"
+                android:showAsAction="ifRoom"
+                android:title="Enabled Dilate"/>
+        </menu>
+
+        <item
+            android:id="@+id/dectect_case"
+            android:orderInCategory="2"
+            android:showAsAction="always"
+            android:title="Java"/>
+    </item>
+
+</menu>
