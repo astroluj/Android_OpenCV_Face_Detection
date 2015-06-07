@@ -1,8 +1,8 @@
-package com.opencv.pca_face_detection.util;
+package com.opencv.util;
 
 import org.opencv.core.Scalar;
 
-public class util {
+public class MenuUtil {
 
 	public static final Scalar FACE_RECT_COLOR = new Scalar(255, 255, 0, 255); // is Yellow
 	

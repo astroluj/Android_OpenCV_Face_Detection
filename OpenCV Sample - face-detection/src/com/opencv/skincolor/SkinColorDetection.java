@@ -8,8 +8,8 @@ import org.opencv.imgproc.Imgproc;
 
 import android.util.Log;
 
-import com.opencv.pca_face_detection.util.MenuValues;
-import com.opencv.pca_face_detection.util.util;
+import com.opencv.util.MenuValues;
+import com.opencv.util.MenuUtil;
 
 public class SkinColorDetection extends RGB {
 
@@ -125,14 +125,14 @@ public class SkinColorDetection extends RGB {
 				Scalar scalarColors = Core.sumElems (this.matRGBAlpha.submat(new Rect (j, i, 1, 1))) ;
 				double sumRGB = scalarColors.val[0] +  scalarColors.val[1] + scalarColors.val[2] ;
 				
-				if  (sumRGB > util.SUM_RGB) 
+				if  (sumRGB > MenuUtil.SUM_RGB) 
 					this.setNormalizeRGB(i, j,
 							// R
-							(util.MAX_SCALAR * scalarColors.val[0] / sumRGB),
+							(MenuUtil.MAX_SCALAR * scalarColors.val[0] / sumRGB),
 							// G
-							(util.MAX_SCALAR * scalarColors.val[1] / sumRGB),
+							(MenuUtil.MAX_SCALAR * scalarColors.val[1] / sumRGB),
 							// B
-							(util.MAX_SCALAR * scalarColors.val[2] / sumRGB)) ;
+							(MenuUtil.MAX_SCALAR * scalarColors.val[2] / sumRGB)) ;
 					
 				else // sumRGB <= util.SUM_RGB
 					this.setNormalizeRGB(i, j, 0, 0, 0) ;
@@ -144,9 +144,9 @@ public class SkinColorDetection extends RGB {
 	private void gaussianProcess (byte[]gaussianColor,
 			double skinLow, double skinHigh, double dev) {
 
-		double[] temp = new double[util.SKIN_MAP_SIZE] ;
+		double[] temp = new double[MenuUtil.SKIN_MAP_SIZE] ;
 
-		for (int i = 0 ; i < util.SKIN_MAP_SIZE ;  i++) {
+		for (int i = 0 ; i < MenuUtil.SKIN_MAP_SIZE ;  i++) {
 			if (i < skinLow)
 				temp[i] = Math.exp(-1. * ((double)i - skinLow) * ((double)i - skinLow) / dev) ;
 			else if (i >= skinLow && i <= skinHigh)
@@ -158,14 +158,14 @@ public class SkinColorDetection extends RGB {
 		double min = 1.0 ;
 		double max = 0.0 ;	
 
-		for (int i = 0 ; i < util.SKIN_MAP_SIZE ; i++) {
+		for (int i = 0 ; i < MenuUtil.SKIN_MAP_SIZE ; i++) {
 			if ( temp[i] < min ) min = temp[i] ;
 			if ( temp[i] > max )	max = temp[i] ;
 		}
 
 		double mag = max - min;
 
-		for(int i = 0 ; i < util.SKIN_MAP_SIZE ; i++) 
+		for(int i = 0 ; i < MenuUtil.SKIN_MAP_SIZE ; i++) 
 			gaussianColor[i] = (byte)((temp[i] - min) / mag * 255) ;
 	}
 }

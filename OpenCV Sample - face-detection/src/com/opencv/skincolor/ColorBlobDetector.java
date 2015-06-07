@@ -6,7 +6,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import com.opencv.pca_face_detection.util.MenuValues;
+import com.opencv.util.MenuValues;
 
 
 public class ColorBlobDetector {

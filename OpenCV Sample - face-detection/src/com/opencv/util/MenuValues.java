@@ -1,4 +1,4 @@
-package com.opencv.pca_face_detection.util;
+package com.opencv.util;
 
 import org.opencv.objdetect.CascadeClassifier;
 
@@ -19,9 +19,9 @@ public class MenuValues {
 	private int absoluteFaceSize ;
 	
 	public MenuValues () {
-		faceDetectionState = util.STOP_DETECTION ;
-    	skinColorDetectionState = util.STOP_DETECTION ;
-		detectorType = util.ENABLED_NATIVE ;
+		faceDetectionState = MenuUtil.STOP_DETECTION ;
+    	skinColorDetectionState = MenuUtil.STOP_DETECTION ;
+		detectorType = MenuUtil.ENABLED_NATIVE ;
 		
 		relativeFaceSize = 0.2f ;
 		absoluteFaceSize = 0 ;

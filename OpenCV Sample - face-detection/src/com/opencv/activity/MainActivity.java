@@ -1,13 +1,25 @@
 package com.opencv.activity;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.CameraBridgeViewBase;
 
 import com.opencv.camera.CvCameraControll;
 import com.opencv.R;
-import com.opencv.pca_face_detection.util.MenuValues;
-import com.opencv.pca_face_detection.util.util;
+import com.opencv.util.MenuValues;
+import com.opencv.util.MenuUtil;
+import com.sqlite.DB;
+import com.sqlite.ImagePathDB;
+import com.sqlite.util.DBUtil;
 
+import android.content.ContentValues;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -22,6 +34,7 @@ public class MainActivity extends ActionBarActivity {
     // Custom Class
     private CvCameraControll cvCamera ;
     private MenuValues menuValues ;
+    private DB db ;
     
     private CameraBridgeViewBase  openCvCameraView;
 
@@ -58,22 +71,73 @@ public class MainActivity extends ActionBarActivity {
     	// Init
      	// face detector
         detectorTypeNames = new String[2];
-        detectorTypeNames[util.ENABLED_JAVA] = getString(R.string.enabled_java) ;
-        detectorTypeNames[util.ENABLED_NATIVE] = getString(R.string.enabled_native) ;
+        detectorTypeNames[MenuUtil.ENABLED_JAVA] = getString(R.string.enabled_java) ;
+        detectorTypeNames[MenuUtil.ENABLED_NATIVE] = getString(R.string.enabled_native) ;
 
         // face detection state
         faceDetectionStateNames = new String[2];
-        faceDetectionStateNames[util.START_DETECTION] = getString(R.string.start_face_detection) ;
-        faceDetectionStateNames[util.STOP_DETECTION] = getString(R.string.stop_face_detection) ;
+        faceDetectionStateNames[MenuUtil.START_DETECTION] = getString(R.string.start_face_detection) ;
+        faceDetectionStateNames[MenuUtil.STOP_DETECTION] = getString(R.string.stop_face_detection) ;
         
         // skin color detection state
         skinColorDetectionStateNames = new String[2] ;
-        skinColorDetectionStateNames[util.START_DETECTION] = getString(R.string.start_skin_color_detection) ;
-        skinColorDetectionStateNames[util.STOP_DETECTION] = getString(R.string.stop_skin_color_detection) ;
+        skinColorDetectionStateNames[MenuUtil.START_DETECTION] = getString(R.string.start_skin_color_detection) ;
+        skinColorDetectionStateNames[MenuUtil.STOP_DETECTION] = getString(R.string.stop_skin_color_detection) ;
         
+        // Default Image Insert
+        db = new DB (getApplicationContext()) ;
+        db.open() ;
+        // DB 처음 데이터 입력하기
+        if (db.selectAll(ImagePathDB.TABLE_NAME).getCount() == 0)
+        	insertDefaultImages () ;
+        
+        db.close();
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
+    // Default Image insert
+    private void insertDefaultImages () {
+    	
+    	for (int i = 1 ; i <= 20 ; i++) {
+    		
+    		// Directory Create
+    		File file = new File (DBUtil.PATH) ;
+			if (!file.isDirectory()) file.mkdirs() ;
+			
+    		OutputStream outputStream = null ;
+    		try {
+    			// file create
+    			outputStream = new FileOutputStream (DBUtil.PATH + "default_image_" + i + ".png") ;
+    			// Image Compress
+    			BitmapFactory.decodeResource(getResources(),
+    					getResources().getIdentifier("default_image_" + i, "drawable", "com.opencv"))
+    					.compress(Bitmap.CompressFormat.PNG, 100, outputStream) ;
+    			outputStream.flush(); 
+    			
+    			// DB Insert Path
+    			ContentValues contentValues = new ContentValues() ;
+    			contentValues.put(ImagePathDB.KEY_IMAGE_PATH,
+    					DBUtil.PATH + "default_image_" + i + ".png");
+    			db.insert(ImagePathDB.TABLE_NAME, contentValues) ;
+    		} catch (FileNotFoundException e) {
+    			e.printStackTrace();
+    			Log.e (TAG, "FileNotFound") ;
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    			Log.e (TAG, "IOException") ;
+    		} finally {
+    			if (outputStream != null) {
+    				try {
+    					outputStream.close () ;
+    					outputStream = null ;
+    				} catch (IOException e) {
+    					outputStream = null ;
+    				}
+    			}
+    		}
+    	}
+    }
+    
     @Override
     public void onPause() {
         super.onPause();
@@ -114,14 +178,14 @@ public class MainActivity extends ActionBarActivity {
     	// Face Detector Type
     	MenuItem faceDetectionFilterSubMenu = menu.findItem(R.id.face_dectection_filter_sub_menu) ;
     	
-    	if (menuValues.getFaceDetectorType () == util.ENABLED_NATIVE)
+    	if (menuValues.getFaceDetectorType () == MenuUtil.ENABLED_NATIVE)
     		faceDetectionFilterSubMenu.setTitle(getString(R.string.face_detector_native)) ;
     	else faceDetectionFilterSubMenu.setTitle (getString(R.string.face_detector_java)) ;
     	
     	// Skin Color Detection State Visiabled
     	MenuItem skinColorDetectionState = menu.findItem(R.id.skin_color_dection_state) ;
     	
-    	if (menuValues.getFaceDetectionState () == util.START_DETECTION) {
+    	if (menuValues.getFaceDetectionState () == MenuUtil.START_DETECTION) {
     		skinColorDetectionState.setVisible(true) ;
     		skinColorDetectionState.setTitle(
     				skinColorDetectionStateNames[
@@ -164,13 +228,13 @@ public class MainActivity extends ActionBarActivity {
 		}
         // Face Detector type
         else if (itemId == R.id.filter_java) {
-			int faceDetectorType = util.ENABLED_JAVA ;
+			int faceDetectorType = MenuUtil.ENABLED_JAVA ;
 
 			item.setTitle(detectorTypeNames[faceDetectorType]);
 			setFaceDetectorType(faceDetectorType);
 		} 
         else if (itemId == R.id.filter_native) {
-			int faceDetectorType = util.ENABLED_NATIVE ;
+			int faceDetectorType = MenuUtil.ENABLED_NATIVE ;
 
 			item.setTitle(detectorTypeNames[faceDetectorType]);
 			setFaceDetectorType(faceDetectorType);
@@ -210,7 +274,7 @@ public class MainActivity extends ActionBarActivity {
         if (menuValues.getFaceDetectorType () != type) {
         	menuValues.setFaceDetectorType (type) ;
 
-            if (type == util.ENABLED_NATIVE) {
+            if (type == MenuUtil.ENABLED_NATIVE) {
                 Log.i(TAG, "Detection Based Tracker enabled");
                 menuValues.startNativeDetector () ;
             } else {
@@ -225,7 +289,7 @@ public class MainActivity extends ActionBarActivity {
         if (menuValues.getFaceDetectionState() != type) {
         	menuValues.setFaceDetectionState(type) ;
             
-            if (type == util.START_DETECTION) {
+            if (type == MenuUtil.START_DETECTION) {
                 Log.i(TAG, "Detection starting");
     			if (openCvCameraView != null) {
     				// register Listener
@@ -238,7 +302,7 @@ public class MainActivity extends ActionBarActivity {
             else { // START_DETECTION
                 Log.i(TAG, "Detection stopping");
                 
-                menuValues.setSkinColorDetectionState(util.STOP_DETECTION) ;
+                menuValues.setSkinColorDetectionState(MenuUtil.STOP_DETECTION) ;
                 // Release Listener
                 if (openCvCameraView != null)
                 	cvCamera = null ;
