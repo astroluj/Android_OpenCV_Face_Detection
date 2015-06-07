@@ -1,4 +1,4 @@
-package com.opencv.util;
+package com.opencv.pca_face_detection.util;
 
 import org.opencv.objdetect.CascadeClassifier;
 
@@ -6,6 +6,8 @@ import com.opencv.face.DetectionBasedTracker;
 
 public class MenuValues {
 
+	// Detection Start or Stop
+ 	private int faceDetectionState, skinColorDetectionState ;
 	// Detector Type
  	private int detectorType ;
 	 	
@@ -15,23 +17,37 @@ public class MenuValues {
 	
 	private float relativeFaceSize ;
 	private int absoluteFaceSize ;
-	private int dilateFilter ;
-	private int erodeFilter ;
 	
 	public MenuValues () {
-		detectorType = util.JAVA_DETECTOR ;
+		faceDetectionState = util.STOP_DETECTION ;
+    	skinColorDetectionState = util.STOP_DETECTION ;
+		detectorType = util.ENABLED_NATIVE ;
 		
 		relativeFaceSize = 0.2f ;
 		absoluteFaceSize = 0 ;
-		dilateFilter = 0 ;
-		erodeFilter = 0 ;
+	}
+	
+	// Face Detection state GetSet
+	public int getFaceDetectionState () {
+		return this.faceDetectionState ;
+	}
+	synchronized public void setFaceDetectionState (int faceDetectionState) {
+		this.faceDetectionState =  faceDetectionState ;
+	}
+	
+	// Skin Color Detection State GetSet
+	public int getSkinColorDetectionState () {
+		return this.skinColorDetectionState ;
+	}
+	synchronized public void setSkinColorDetectionState (int skinColorDetectionState) {
+		this.skinColorDetectionState = skinColorDetectionState ;
 	}
 	
 	// DetectorType GetSet
-	public int getDetectorType () {
+	public int getFaceDetectorType () {
 		return this.detectorType ;
 	}
-	synchronized public void setDetectorType (int detectorType) {
+	synchronized public void setFaceDetectorType (int detectorType) {
 		this.detectorType = detectorType ;
 	}
 	
@@ -69,22 +85,6 @@ public class MenuValues {
 		try {
 			this.nativeDetector.stop () ;
 		} catch (Exception e) {}
-	}
-	
-	// SkinColorFilter GetSet
-	public int getDilateFilter () {
-		return this.dilateFilter ;
-	}
-	synchronized public void setDilateFilter (int dilateFilter) {
-		this.dilateFilter = dilateFilter ;
-	}
-	
-	// erodeFilter GetSet
-	public int getErodeFilter () {
-		return this.erodeFilter ;
-	}
-	synchronized public void setErodeFilter (int erodeFilter) {
-		this.erodeFilter = erodeFilter ;
 	}
 	
 	// relativeFaceSize GetSet

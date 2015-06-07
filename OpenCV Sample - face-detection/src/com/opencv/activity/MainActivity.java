@@ -3,19 +3,19 @@ package com.opencv.activity;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.CameraBridgeViewBase;
 
-import com.opencv.R;
 import com.opencv.camera.CvCameraControll;
-import com.opencv.util.MenuValues;
-import com.opencv.util.util;
+import com.opencv.R;
+import com.opencv.pca_face_detection.util.MenuValues;
+import com.opencv.pca_face_detection.util.util;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
-public class MainActivity extends Activity {
+public class MainActivity extends ActionBarActivity {
 
     private static final String    TAG                 = "OpenCV::Activity";
     
@@ -25,38 +25,10 @@ public class MainActivity extends Activity {
     
     private CameraBridgeViewBase  openCvCameraView;
 
-     // Detection Start or Stop
- 	private int detectionState ;
- 	
  	private String[] detectorTypeNames;
- 	private String[] detectionStateNames ;
- 	private String[] dilateFilterNames ;
- 	private String[] erodeFilterNames ;
+ 	private String[] skinColorDetectionStateNames ;
+ 	private String[] faceDetectionStateNames ;
  	
-    public MainActivity() {
-
-    	// Init
-     	detectionState = util.STOP_DETECTION ;
-     	
-        detectorTypeNames = new String[2];
-        detectorTypeNames[util.JAVA_DETECTOR] = "Java";
-        detectorTypeNames[util.NATIVE_DETECTOR] = "Native (tracking)";
-
-        detectionStateNames = new String[2];
-        detectionStateNames[util.START_DETECTION] = "Start Detection";
-        detectionStateNames[util.STOP_DETECTION] = "Stop Detection";
-        
-        dilateFilterNames = new String[2] ;
-        dilateFilterNames[util.ENABLED_DILATE] = "Enabled Dilate" ;
-        dilateFilterNames[util.DISABLED_DILATE] = "Disabled Dilate" ;
-        
-        erodeFilterNames = new String[2] ;
-        erodeFilterNames[util.ENABLED_ERODE] = "Enabled Erode" ;
-        erodeFilterNames[util.DISABLED_ERODE] = "Disabled Erode" ;
-        
-        Log.i(TAG, "Instantiated new " + this.getClass());
-    }
-
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,6 +40,8 @@ public class MainActivity extends Activity {
         // Call Layout
         setContentView(R.layout.face_detect_surface_view);
 
+        initializes () ;
+        
         // MenuValues Initial
     	menuValues = new MenuValues() ;
     	
@@ -77,6 +51,27 @@ public class MainActivity extends Activity {
     	// Parameter context, MenuValues
         cvCamera = new CvCameraControll (getApplicationContext(), menuValues,
         		openCvCameraView) ;
+    }
+    
+    private void initializes () {
+
+    	// Init
+     	// face detector
+        detectorTypeNames = new String[2];
+        detectorTypeNames[util.ENABLED_JAVA] = getString(R.string.enabled_java) ;
+        detectorTypeNames[util.ENABLED_NATIVE] = getString(R.string.enabled_native) ;
+
+        // face detection state
+        faceDetectionStateNames = new String[2];
+        faceDetectionStateNames[util.START_DETECTION] = getString(R.string.start_face_detection) ;
+        faceDetectionStateNames[util.STOP_DETECTION] = getString(R.string.stop_face_detection) ;
+        
+        // skin color detection state
+        skinColorDetectionStateNames = new String[2] ;
+        skinColorDetectionStateNames[util.START_DETECTION] = getString(R.string.start_skin_color_detection) ;
+        skinColorDetectionStateNames[util.STOP_DETECTION] = getString(R.string.stop_skin_color_detection) ;
+        
+        Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
     @Override
@@ -116,35 +111,37 @@ public class MainActivity extends Activity {
     public boolean onPrepareOptionsMenu(Menu menu) {
     	super.onPrepareOptionsMenu(menu) ;
     	
+    	// Face Detector Type
+    	MenuItem faceDetectionFilterSubMenu = menu.findItem(R.id.face_dectection_filter_sub_menu) ;
+    	
+    	if (menuValues.getFaceDetectorType () == util.ENABLED_NATIVE)
+    		faceDetectionFilterSubMenu.setTitle(getString(R.string.face_detector_native)) ;
+    	else faceDetectionFilterSubMenu.setTitle (getString(R.string.face_detector_java)) ;
+    	
+    	// Skin Color Detection State Visiabled
+    	MenuItem skinColorDetectionState = menu.findItem(R.id.skin_color_dection_state) ;
+    	
+    	if (menuValues.getFaceDetectionState () == util.START_DETECTION) {
+    		skinColorDetectionState.setVisible(true) ;
+    		skinColorDetectionState.setTitle(
+    				skinColorDetectionStateNames[
+    				                             (menuValues.getSkinColorDetectionState() + 1) 
+    				                             % skinColorDetectionStateNames.length]) ;
+    	}
+    	else skinColorDetectionState.setVisible(false) ;
+    	
     	// Face Size
-    	MenuItem faceSizeSubMenu = menu.findItem(R.id.face_size_sub_menu), selectItem = null ;
+    	MenuItem faceSizeSubMenu = menu.findItem(R.id.face_size_sub_menu) ;
     	
     	float sizeValue = menuValues.getRelativeFaceSize () ;
     	if (sizeValue == 0.5f) 
-    		selectItem = menu.findItem(R.id.face_size_50) ;
+    		faceSizeSubMenu.setTitle(getString(R.string.fase_size_50)) ;
         else if (sizeValue == 0.4f)
-        	selectItem = menu.findItem(R.id.face_size_40) ;
+        	faceSizeSubMenu.setTitle(getString(R.string.fase_size_40)) ;
         else if (sizeValue == 0.3f)
-        	selectItem = menu.findItem(R.id.face_size_30) ;
+        	faceSizeSubMenu.setTitle(getString(R.string.fase_size_30)) ;
         else if (sizeValue == 0.2f)
-        	selectItem = menu.findItem(R.id.face_size_20) ;
-    	
-    	faceSizeSubMenu.setTitle(selectItem.getTitle()) ;
-    	
-    	
-    	// SkinColor Filter
-    	MenuItem skinColorFilterSubMenu = menu.findItem(R.id.filter_sub_menu) ;
-    	
-    	int dilateValue = menuValues.getDilateFilter(),
-    			erodeValue = menuValues.getErodeFilter() ;
-    	if (dilateValue == util.ENABLED_DILATE
-    			&& erodeValue == util.ENABLED_ERODE) 
-    		skinColorFilterSubMenu.setTitle("Enabled Erode, Dilate") ;
-    	else if (dilateValue == util.ENABLED_DILATE)
-    		skinColorFilterSubMenu.setTitle("Enabled Dilate") ;
-    	else if (erodeValue == util.ENABLED_ERODE)
-    		skinColorFilterSubMenu.setTitle("Enabled Erode") ;
-    	else skinColorFilterSubMenu.setTitle("No Filter") ;
+        	faceSizeSubMenu.setTitle(getString(R.string.fase_size_20)) ;
     	
     	return true ;
     }
@@ -155,21 +152,39 @@ public class MainActivity extends Activity {
         Log.i(TAG, "called onOptionsItemSelected; selected item: " + item);
         int itemId = item.getItemId() ;
         
-        // Detector type
-		if (itemId == R.id.dectect_case) {
-			int tmpDetectorType = (menuValues.getDetectorType () + 1)
-					% detectorTypeNames.length;
-			item.setTitle(detectorTypeNames[tmpDetectorType]);
-			setDetectorType(tmpDetectorType);
-		} 
-		// Detection State
-		else if (itemId == R.id.start_fase_detection) {
-			item.setTitle(detectionStateNames[detectionState]);
-			int tmpDetectionType = (detectionState + 1)
-					% detectionStateNames.length;
+        // Face Detection State
+        if (itemId == R.id.face_detection_state) {
+			int faceDetectionState = menuValues.getFaceDetectionState() ;
 			
-			setDetectionState(tmpDetectionType);
+			item.setTitle(faceDetectionStateNames[faceDetectionState]);
+			faceDetectionState = (faceDetectionState + 1)
+					% faceDetectionStateNames.length;
+			
+			setFaceDetectionState(faceDetectionState);
 		}
+        // Face Detector type
+        else if (itemId == R.id.filter_java) {
+			int faceDetectorType = util.ENABLED_JAVA ;
+
+			item.setTitle(detectorTypeNames[faceDetectorType]);
+			setFaceDetectorType(faceDetectorType);
+		} 
+        else if (itemId == R.id.filter_native) {
+			int faceDetectorType = util.ENABLED_NATIVE ;
+
+			item.setTitle(detectorTypeNames[faceDetectorType]);
+			setFaceDetectorType(faceDetectorType);
+		}
+        // Skin Color Detection
+        else if (itemId == R.id.skin_color_dection_state) {
+        	int skinColorDetectionState = menuValues.getSkinColorDetectionState() ;
+			
+			item.setTitle(skinColorDetectionStateNames[skinColorDetectionState]);
+			skinColorDetectionState = (skinColorDetectionState + 1)
+					% skinColorDetectionStateNames.length;
+			
+			setSkinColorDetectionState(skinColorDetectionState);
+        }
 		// FaceSize
         else if (itemId == R.id.face_size_50) 
                 setMinFaceSize(0.5f);
@@ -179,21 +194,6 @@ public class MainActivity extends Activity {
         	setMinFaceSize(0.3f);
         else if (itemId == R.id.face_size_20)
         	setMinFaceSize(0.2f);
-        // Filter
-        else if (itemId == R.id.filter_dilate) {
-        	item.setTitle(dilateFilterNames[menuValues.getDilateFilter()]);
-        	int tmpDilateFilter = (menuValues.getDilateFilter() + 1)
-        			%  dilateFilterNames.length ;
-			
-        	setDilateFilter (tmpDilateFilter) ;
-        }
-        else if (itemId == R.id.filter_erode) {
-        	item.setTitle(erodeFilterNames[menuValues.getErodeFilter()]);
-        	int tmpErodeFilter = (menuValues.getErodeFilter() + 1)
-        			%  erodeFilterNames.length ;
-        	
-        	setErodeFilter (tmpErodeFilter) ;
-        }
 		
         return true ;
     }
@@ -206,11 +206,11 @@ public class MainActivity extends Activity {
     }
     
     // User Select detector Types, java or native
-    private void setDetectorType(int type) {
-        if (menuValues.getDetectorType () != type) {
-        	menuValues.setDetectorType (type) ;
+    private void setFaceDetectorType(int type) {
+        if (menuValues.getFaceDetectorType () != type) {
+        	menuValues.setFaceDetectorType (type) ;
 
-            if (type == util.NATIVE_DETECTOR) {
+            if (type == util.ENABLED_NATIVE) {
                 Log.i(TAG, "Detection Based Tracker enabled");
                 menuValues.startNativeDetector () ;
             } else {
@@ -220,10 +220,10 @@ public class MainActivity extends Activity {
         }
     }
     
-    // User Change Detection State, Start or Stop
-    private void setDetectionState(int type) {
-        if (detectionState != type) {
-            detectionState = type;
+    // User Change FaceDetection State, Start or Stop
+    private void setFaceDetectionState(int type) {
+        if (menuValues.getFaceDetectionState() != type) {
+        	menuValues.setFaceDetectionState(type) ;
             
             if (type == util.START_DETECTION) {
                 Log.i(TAG, "Detection starting");
@@ -237,6 +237,8 @@ public class MainActivity extends Activity {
             } 
             else { // START_DETECTION
                 Log.i(TAG, "Detection stopping");
+                
+                menuValues.setSkinColorDetectionState(util.STOP_DETECTION) ;
                 // Release Listener
                 if (openCvCameraView != null)
                 	cvCamera = null ;
@@ -245,27 +247,10 @@ public class MainActivity extends Activity {
         }
     }
     
-    // User Change Dilate Filter  Enabled or Disabled
-    private void setDilateFilter (int type) {
-    	if (menuValues.getDilateFilter () != type) {
-        	menuValues.setDilateFilter(type) ;
-
-            if (type == util.ENABLED_DILATE) {
-                Log.i(TAG, "Dilate Filter  Enabled");
-            } else 
-                Log.i(TAG, "Dilate Filter  Disabled");
-        }
-    }
-    
-    // User Change Dilate Filter  Enabled or Disabled
-    private void setErodeFilter (int type) {
-    	if (menuValues.getErodeFilter () != type) {
-        	menuValues.setErodeFilter(type) ;
-
-            if (type == util.ENABLED_ERODE) {
-                Log.i(TAG, "Erode Filter  Enabled");
-            } else 
-                Log.i(TAG, "Erode Filter  Disabled");
+    // User Change SkinColorDetection State, Start or Stop
+    private void setSkinColorDetectionState(int type) {
+        if (menuValues.getSkinColorDetectionState() != type) {
+        	menuValues.setSkinColorDetectionState(type) ;
         }
     }
 }

@@ -8,8 +8,8 @@ import org.opencv.imgproc.Imgproc;
 
 import android.util.Log;
 
-import com.opencv.util.MenuValues;
-import com.opencv.util.util;
+import com.opencv.pca_face_detection.util.MenuValues;
+import com.opencv.pca_face_detection.util.util;
 
 public class SkinColorDetection extends RGB {
 
@@ -17,7 +17,6 @@ public class SkinColorDetection extends RGB {
 	
 	// Custom Class
 	private ColorBlobDetector colorDetector ;
-	private MenuValues mevalues ;
 	
 	private Mat matRGBAlpha;
 	

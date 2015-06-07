@@ -10,7 +10,7 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 
 import com.opencv.R;
-import com.opencv.util.MenuValues;
+import com.opencv.pca_face_detection.util.MenuValues;
 
 import android.content.Context;
 import android.util.Log;

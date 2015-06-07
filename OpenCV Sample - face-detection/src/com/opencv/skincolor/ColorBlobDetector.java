@@ -6,10 +6,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import com.opencv.util.MenuValues;
-import com.opencv.util.util;
-
-import android.util.Log;
+import com.opencv.pca_face_detection.util.MenuValues;
 
 
 public class ColorBlobDetector {
@@ -55,16 +52,8 @@ public class ColorBlobDetector {
 	        Core.inRange(rgbaImage, mLowerBound, mUpperBound, rgbaImage);
 	        
 	        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(5, 5)) ;
-	        Log.d ("AAA", menuValues.getErodeFilter() +"") ;
-	        if (menuValues.getErodeFilter() == util.ENABLED_ERODE) {
-	        	Imgproc.erode(rgbaImage, rgbaImage, kernel);
-	        	Log.d ("AAA", "AA") ;
-	        }
-	        Log.d ("AAA", menuValues.getDilateFilter() +"") ;
-	        if (menuValues.getDilateFilter() == util.ENABLED_DILATE){
-	        	Imgproc.dilate(rgbaImage, rgbaImage, kernel);
-	        	Log.d ("AAA", "BB") ;
-	        }
+	        Imgproc.erode(rgbaImage, rgbaImage, kernel);
+	        Imgproc.dilate(rgbaImage, rgbaImage, kernel);
 	        //Imgproc.cvtColor(rgbaImage, rgbaImage, Imgproc.COLOR_GRAY2BGRA) ;
     	}
     }

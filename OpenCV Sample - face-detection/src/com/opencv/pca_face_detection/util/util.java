@@ -1,4 +1,4 @@
-package com.opencv.util;
+package com.opencv.pca_face_detection.util;
 
 import org.opencv.core.Scalar;
 
@@ -6,15 +6,13 @@ public class util {
 
 	public static final Scalar FACE_RECT_COLOR = new Scalar(255, 255, 0, 255); // is Yellow
 	
-	public static final int        JAVA_DETECTOR       = 0;
-	public static final int        NATIVE_DETECTOR     = 1;
+	// Face Detection Filters Code
+	public static final int 	    ENABLED_JAVA		   = 1 ;
+	public static final int		    ENABLED_NATIVE		  = 0 ;
+	
+	// Detection State Code
 	public static final int			STOP_DETECTION = 0 ;
 	public static final int			START_DETECTION = 1 ;
-	public static final int			DISABLED_ERODE = 0 ;
-	public static final int			ENABLED_ERODE = 1 ;
-	public static final int			DISABLED_DILATE = 0 ;
-	public static final int			ENABLED_DILATE = 1 ;
-	
 	
 	//skin color에 대한 평균(범위 ) 및 standard deviation
 	//여려분은 얼굴 검출 영역에서 자동으로 평균값 추출할 것 

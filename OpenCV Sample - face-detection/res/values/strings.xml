@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">OCV Face Detection</string>
+    
+    <!-- Face Detection State String value  -->
+    <string name = "start_face_detection">Start Face Dection</string>
+    <string name = "stop_face_detection">Stop Face Dection</string>
+    
+    <!-- Skin Color Detection State String value -->
+    <string name = "start_skin_color_detection">Start skin_color Dection</string>
+    <string name = "stop_skin_color_detection">Stop skin_color Dection</string>
+    
+    <!-- Face Detection Filters String value  -->
+	<string name = "face_detector_java">Face detector : JAVA</string>
+	<string name = "face_detector_native">Face detector : NATIVE(tracking)</string>
+	<string name = "enabled_java">Enabled Java</string>
+	<string name = "enabled_native">Enabled Native</string>
+	
+	<!-- Face Size -->
+	<string name = "fase_size_50">FaceSize 50%</string>
+	<string name = "fase_size_40">FaceSize 40%</string>
+	<string name = "fase_size_30">FaceSize 30%</string>
+	<string name = "fase_size_20">FaceSize 20%</string>
 </resources>

@@ -5,8 +5,8 @@ import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 import org.opencv.core.Size;
 
-import com.opencv.util.MenuValues;
-import com.opencv.util.util;
+import com.opencv.pca_face_detection.util.MenuValues;
+import com.opencv.pca_face_detection.util.util;
 
 import android.util.Log;
 
@@ -69,9 +69,9 @@ public class FaceDetectionArea {
 			// Rectangles
 			MatOfRect faces = new MatOfRect();
 	
-			int detectorType = menuValues.getDetectorType() ;
+			int detectorType = menuValues.getFaceDetectorType() ;
 			// isJavaDetector
-			if (detectorType == util.JAVA_DETECTOR) {
+			if (detectorType == util.ENABLED_JAVA) {
 				if (menuValues.getJavaDetector () != null)
 					menuValues.getJavaDetector ().detectMultiScale(matGray,
 							faces,
@@ -82,7 +82,7 @@ public class FaceDetectionArea {
 							new Size());
 			} 
 			// isNativeDetector
-			else if (detectorType == util.NATIVE_DETECTOR) {
+			else if (detectorType == util.ENABLED_NATIVE) {
 				if (menuValues.getNativeDetector () != null)
 					menuValues.getNativeDetector ().detect(matGray, faces) ;
 			} 

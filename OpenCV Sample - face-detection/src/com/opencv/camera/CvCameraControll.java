@@ -4,12 +4,14 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 
 import com.opencv.face.FaceDetectionArea;
+import com.opencv.pca_face_detection.util.MenuValues;
+import com.opencv.pca_face_detection.util.util;
 import com.opencv.skincolor.SkinColorDetection;
-import com.opencv.util.MenuValues;
 
 import android.content.Context;
 import android.util.Log;
@@ -60,17 +62,28 @@ public class CvCameraControll implements CvCameraViewListener2 {
 		
 		// 얼굴 찾기
 		Rect[] facesArray = faceDetectionArea.FaceDetection() ;
-		// non-exist faces
-		if (facesArray == null || facesArray.length == 0)
-			return faceDetectionArea.getMatRGBAlpha() ;
+		
 		// exist faces
-		else {
+		if (!(facesArray == null || facesArray.length == 0)
+				&& menuValues.getSkinColorDetectionState() == util.START_DETECTION) {
 			// Finding skin colors
 			// Init case
 			if (skinColorDetection == null)
 				skinColorDetection = new SkinColorDetection(faceDetectionArea.getMatRGBAlpha(), this.menuValues) ;
 			
 			return skinColorDetection.skinColorDetection(facesArray) ;
+		}
+		
+		// else case and non-exist faces
+		else {
+			// Rectangle draw near faces 
+ 			for (Rect faceArray : facesArray) {
+ 				Core.rectangle(faceDetectionArea.getMatRGBAlpha(),
+ 						faceArray.tl(), faceArray.br(),
+ 						util.FACE_RECT_COLOR, 3);
+ 			}
+ 			
+ 			return faceDetectionArea.getMatRGBAlpha() ;
 		}
 	}
 	
