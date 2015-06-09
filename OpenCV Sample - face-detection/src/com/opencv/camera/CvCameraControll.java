@@ -29,7 +29,7 @@ public class CvCameraControll implements CvCameraViewListener2 {
 	private LoaderCallback  loaderCallback ;
 	private MenuValues menuValues ;
 	
-	private Mat searchMat ;
+	private Mat searchMat, similarMat ;
 	
 	private Context context ;
     
@@ -49,18 +49,30 @@ public class CvCameraControll implements CvCameraViewListener2 {
 	synchronized public Rect[] getFacesArray () {
 		return faceDetectionArea.getFacesArray() ;
 	}
-	// FaceDetectionArea Frame GetSet
-	synchronized public Mat getFaceMat (Rect faceArray) {
-		
-		Mat searchMat = faceDetectionArea.getMatRGBAlpha().clone().submat(faceArray) ;
-		Imgproc.resize(searchMat, searchMat, CVUtil.ROI_FACE_SIZE) ;
-		
-		return searchMat ;
+	// FaceDetectionArea SearchFace GetSet
+	synchronized public Mat getSearchFaceMat (Rect faceArray) {
+		return faceDetectionArea.getMatRGBAlpha().clone().submat(faceArray) ;
 	}
-	synchronized public void setFaceMat (Mat searchMat) {
-		this.searchMat = searchMat ;
+	synchronized public void setSearchFaceMat (Mat searchMat) {
+		
+		try {
+			this.searchMat = searchMat ;
+			Imgproc.resize(this.searchMat, this.searchMat, CVUtil.ROI_FACE_SIZE) ;
+		} catch (NullPointerException e) {}
 	}
 	
+	// FaceDetectionArea SimilarFace GetSet
+	synchronized public Mat getSimilarFaceMat () {
+		return this.similarMat ;
+	}
+	synchronized public void setSimilaFaceMat (Mat similarMat) {
+		
+		try {
+			this.similarMat = similarMat ;
+			Imgproc.resize(this.similarMat, this.similarMat, CVUtil.ROI_FACE_SIZE) ;
+		} catch (NullPointerException e) {}
+	}
+		
 	public void onCameraViewStarted(int width, int height) {
 		Log.i(TAG, "onCameraViewStarted");
 		// Construct Gray Scale
@@ -100,12 +112,24 @@ public class CvCameraControll implements CvCameraViewListener2 {
  			for (Rect faceArray : facesArray) {
  				Core.rectangle(faceDetectionArea.getMatRGBAlpha(),
  						faceArray.tl(), faceArray.br(),
- 						CVUtil.FACE_RECT_COLOR, 3);
+ 						CVUtil.FACE_RECT_COLOR, CVUtil.LINE_WIDTH);
  			}
+ 			// SearchMat shows
  			if (searchMat != null) {
- 				Mat roi = faceDetectionArea.getMatRGBAlpha().submat(0, searchMat.rows(), 0, searchMat.cols()) ;
+ 				Mat roi = faceDetectionArea.getMatRGBAlpha()
+ 						.submat(0, searchMat.rows(), 0, searchMat.cols()) ;
  				searchMat.copyTo(roi) ;
+ 				
+ 				// SimilarMat Shows
+ 	 			if (similarMat != null) {
+ 	 				Log.d (TAG, "A") ;
+ 	 				roi = faceDetectionArea.getMatRGBAlpha()
+ 	 						.submat(0, similarMat.rows(), similarMat.cols(),
+ 	 								similarMat.cols() + similarMat.cols()) ;
+ 	 				similarMat.copyTo(roi) ;
+ 	 			}
  			}
+ 			
  			return faceDetectionArea.getMatRGBAlpha() ;
 		}
 	}

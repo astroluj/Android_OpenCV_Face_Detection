@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -46,7 +45,7 @@ public class PCA {
 	}
 	
 	// 찾기
-	public void searchPCA () {
+	public Mat searchPCA (Mat searchMat) {
 		// 1) DB읽어오기
 		db.open () ;
 		
@@ -55,56 +54,94 @@ public class PCA {
 		Cursor cursor = db.selectAll(ImageAnalyzeDB.TABLE_NAME) ;
 		
 		cursor.moveToFirst() ;
-		Mat tempMat = new Mat (1, 1024, 6) ;
 		for (int i = 0 ; i < cursor.getCount() ; i++) {
 			
-			try {
-				Log.d (TAG, Double.parseDouble(cursor.getString(1)) +"") ;
-			} catch (UnsupportedOperationException e) {
-				e.printStackTrace();
-				Log.d (TAG, "A") ;
-			}
-			try {
-				omega.put(i, 0, cursor.getString(2).getBytes("UTF-8")) ;
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
 			cursor.moveToNext() ;
 		}
 		
 		cursor.close () ;
 		db.close () ;
+		
+		/*
 		eigenFace.convertTo(eigenFace, CvType.CV_64FC1) ;
 		omega.convertTo(omega, CvType.CV_64FC1) ;
 		
 		// 2) 테스트영상 불러오기
-		Mat testMat = new Mat () ;
-		Imgproc.cvtColor(testMat, testMat, Imgproc.COLOR_RGB2GRAY);
-    	//Imgproc.resize(testMat, testMat, CVUtil.IMAGE_SIZE);
-    	testMat = testMat.reshape(0, 1) ;
-    	testMat.convertTo(testMat, CvType.CV_64FC1) ;
+		Imgproc.cvtColor(searchMat, searchMat, Imgproc.COLOR_RGB2GRAY);
+    	Imgproc.resize(searchMat, searchMat, CVUtil.IMAGE_SIZE);
+    	searchMat = searchMat.reshape(0, 1) ;
+    	searchMat.convertTo(searchMat, CvType.CV_64FC1) ;
     	
 		// 3) 테스트영상 정규화
-		Core.subtract(testMat, mean, testMat) ;
+		Core.subtract(searchMat, mean, searchMat) ;
 		
 		// 4) 벡터공간에 정규화된 테스트영상 투영
-		Core.gemm(testMat, eigenFace, 1, new Mat (), 0, testMat) ;
+		Core.gemm(searchMat, eigenFace, 1, new Mat (), 0, searchMat) ;
 		
 		// 5) weight값 계산
 		Mat weightMat = new Mat (), subtract = new Mat () ;
 		for (int i = 0 ; i < omega.rows() ; i++) {
-			Core.subtract(testMat, omega.row(i), subtract) ;
+			Core.subtract(searchMat, omega.row(i), subtract) ;
 			weightMat.push_back(subtract) ;
 		}
 			
 		// 6) 가장 근접한 weight값 찾기
-		double[][] dist = new double[weightMat.rows()][weightMat.cols()] ;
+		double[][] distance = new double[weightMat.rows()][weightMat.cols()] ;
 		
-		for (int i = 0 ; i < dist.length ; i++) {
-			for (int j = 0 ; j < dist[i].length ; j++) {
+		for (int i = 0 ; i < distance.length ; i++) {
+			for (int j = 0 ; j < distance[i].length ; j++) {
 				
 			}
 		}
+		
+		// DB KEY_INDEX Eqaul
+		int index = minimumIndex (distance (distance, distance.length, distance[0].length),
+				distance[0].length) +1 ;
+				*/
+		String filePath = "" ;
+		db.open() ;
+		cursor = db.selectAll(ImagePathDB.TABLE_NAME) ;
+		cursor.moveToFirst() ;
+		cursor.moveToLast() ;
+		filePath = cursor.getString(1) ;
+		cursor.close () ;
+		db.close(); 
+		
+		Log.d (TAG, "Expose Similar Image : " + filePath) ;
+		
+		// 근접한 이미지
+		return Highgui.imread(filePath,
+				Highgui.IMREAD_COLOR | Highgui.IMREAD_COLOR) ;
+	}
+	
+	// 최소거리의 인덱스 반환하는 함수
+	private int minimumIndex (double[] dist, int size) {
+		double min = CVUtil.DBL_MAX ;
+		int minIndex = size ;
+		
+		for (int i = 0 ; i < size ; i++) {
+			if (min > dist[i]) {
+				min = dist[i] ;
+				minIndex = i ;
+			}
+		}
+		
+		return minIndex ;
+	}
+	
+	// 거리구하는 함수
+	private double[] distance(double[][] distance, int row, int col) {
+		double[] dist = new double[col] ;
+		
+		for (int i = 0 ; i <col ; i++) {
+			double sum = 0 ;
+			for (int j = 0 ; j < row ; j++) {
+				sum += distance[i][j] * distance[i][j];
+			}
+			dist[i] = Math.sqrt(sum) ;
+		}
+		
+		return dist ;
 	}
 	
 	// 새로운 이미지 학습
@@ -119,10 +156,10 @@ public class PCA {
 	
 	        cursor.moveToFirst() ;
 	        for (int i = 0 ; i < cursor.getCount() ; i++) {
-	        	String fileName = cursor.getString(1) ;
-	        	Log.d (TAG, "Image Path : " + fileName) ;
+	        	String filePath = cursor.getString(1) ;
+	        	Log.d (TAG, "Image Path : " + filePath) ;
 	        	
-	        	Mat grayMat = Highgui.imread(fileName,
+	        	Mat grayMat = Highgui.imread(filePath,
 	        			Highgui.IMREAD_ANYDEPTH | Highgui.IMREAD_ANYCOLOR) ;
 	        	Imgproc.cvtColor(grayMat, grayMat, Imgproc.COLOR_RGB2GRAY);
 	        	//Imgproc.resize(grayMat, grayMat, CVUtil.IMAGE_SIZE);
@@ -190,54 +227,30 @@ public class PCA {
 	public void insertNewImages (Mat newMat) {
 		
 		// Bitmap 틀
-		Bitmap image = Bitmap.createBitmap(newMat.cols(), newMat.rows(),
-				Bitmap.Config.ARGB_8888) ;
-		// Convert 
-		Utils.matToBitmap(newMat, image);
+		Bitmap image = null ;
 		
-		// Directory Create
-		File file = new File (DBUtil.PATH) ;
-		if (!file.isDirectory()) file.mkdirs() ;
-		
-		// exist Images count
-		db.open() ;
-		int count = db.selectAll(ImagePathDB.TABLE_NAME).getCount() + 1;
-		db.close () ;
-		
-		OutputStream outputStream = null ;
 		try {
-			// file create
-			outputStream = new FileOutputStream (DBUtil.PATH + "default_image_" + count + ".png") ;
-			// image resizing
-			Bitmap.createScaledBitmap(image,
-					CVUtil.IMAGE_LENGTH, CVUtil.IMAGE_LENGTH, true) ;
-			// Image Compress
-			image.compress(Bitmap.CompressFormat.PNG, 100, outputStream) ;
-			outputStream.flush(); 
+			image = Bitmap.createBitmap(newMat.cols(), newMat.rows(),
+					Bitmap.Config.ARGB_8888) ;
+			// Convert 
+			Utils.matToBitmap(newMat, image);
 			
-			// DB Insert Path
-			ContentValues contentValues = new ContentValues() ;
-			contentValues.put(ImagePathDB.KEY_IMAGE_PATH,
-					DBUtil.PATH + "default_image_" + count + ".png");
+			// exist Images count
 			db.open() ;
-			db.insert(ImagePathDB.TABLE_NAME, contentValues) ;
-			db.close() ;
-		} catch (FileNotFoundException e) {
+			int count = db.selectAll(ImagePathDB.TABLE_NAME).getCount() + 1;
+			db.close () ;
+			
+			// SD_card save
+			saveImage (image, count) ;
+			
+			// file path DB insert
+			insertImageFilePath(count) ;
+			
+		} catch (Exception e) {
 			e.printStackTrace();
-			Log.e (TAG, "FileNotFound") ;
-		} catch (IOException e) {
-			e.printStackTrace();
-			Log.e (TAG, "IOException") ;
 		} finally {
-			db.close() ; 
-			if (outputStream != null) {
-				try {
-					outputStream.close () ;
-					outputStream = null ;
-				} catch (IOException e) {
-					outputStream = null ;
-				}
-    		}
+			// image resource recycle
+			image.recycle() ;
     	}
 	}
 	
@@ -245,48 +258,82 @@ public class PCA {
     public void insertDefaultImages () {
     	
     	for (int i = 1 ; i <= 20 ; i++) {
+    		Bitmap image =null ;
     		
-    		// Directory Create
-    		File file = new File (DBUtil.PATH) ;
-			if (!file.isDirectory()) file.mkdirs() ;
-			
-    		OutputStream outputStream = null ;
     		try {
-    			// file create
-    			outputStream = new FileOutputStream (DBUtil.PATH + "default_image_" + i + ".png") ;
     			// Image Compress
-    			Bitmap image = BitmapFactory.decodeResource(context.getResources(),
+    			image = BitmapFactory.decodeResource(context.getResources(),
     					context.getResources().getIdentifier("default_image_" + i, "drawable", "com.opencv")) ;
-    			// resizing
-    			Bitmap.createScaledBitmap(image,
-    					CVUtil.IMAGE_LENGTH, CVUtil.IMAGE_LENGTH, true) ;
-    			image.compress(Bitmap.CompressFormat.PNG, 100, outputStream) ;
-    			outputStream.flush(); 
     			
-    			// DB Insert Path
-    			ContentValues contentValues = new ContentValues() ;
-    			contentValues.put(ImagePathDB.KEY_IMAGE_PATH,
-    					DBUtil.PATH + "default_image_" + i + ".png");
-    			db.open() ;
-    			db.insert(ImagePathDB.TABLE_NAME, contentValues) ;
-    			db.close() ;
-    		} catch (FileNotFoundException e) {
+    			// SD_card save
+    			saveImage (image, i) ;
+    			
+    			// file path DB insert
+    			insertImageFilePath(i) ;
+    			
+    		} catch (Exception e) {
     			e.printStackTrace();
-    			Log.e (TAG, "FileNotFound") ;
-    		} catch (IOException e) {
-    			e.printStackTrace();
-    			Log.e (TAG, "IOException") ;
     		} finally {
-    			db.close() ; 
-    			if (outputStream != null) {
-    				try {
-    					outputStream.close () ;
-    					outputStream = null ;
-    				} catch (IOException e) {
-    					outputStream = null ;
-    				}
-    			}
+    			// image resource recycle
+    			image.recycle() ;
     		}
     	}
+    }
+    
+    // Image File Compress
+    private boolean saveImage (Bitmap image, int id) {
+    	
+    	// Directory Create
+		File file = new File (DBUtil.PATH) ;
+		if (!file.isDirectory()) file.mkdirs() ;
+		
+		OutputStream outputStream = null ;
+		try {
+	    	// file create
+			outputStream = new FileOutputStream (DBUtil.PATH + "default_image_" + id + ".png") ;
+			// resizing
+			Bitmap.createScaledBitmap(image,
+					CVUtil.IMAGE_LENGTH, CVUtil.IMAGE_LENGTH, true) ;
+			image.compress(Bitmap.CompressFormat.PNG, 100, outputStream) ;
+			outputStream.flush();
+			
+		} catch (FileNotFoundException e) {
+			return false ;
+		} catch (IOException e) {
+			return false ;
+		} finally {
+			if (outputStream != null) {
+				try {
+					outputStream.close () ;
+					outputStream = null ;
+				} catch (IOException e) {
+					outputStream = null ;
+				}
+			}
+		}
+		
+		return true ;
+    }
+    
+    // File Pat insert DB
+    private boolean insertImageFilePath (int id) {
+    	
+    	try {
+    		// DB Insert Path
+			ContentValues contentValues = new ContentValues() ;
+			contentValues.put(ImagePathDB.KEY_IMAGE_PATH,
+					DBUtil.PATH + "default_image_" + id + ".png");
+			db.open() ;
+			db.insert(ImagePathDB.TABLE_NAME, contentValues) ;
+			
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		
+    		return false ;
+    	} finally {
+    		db.close () ;
+    	}
+    	
+    	return true ;
     }
 }

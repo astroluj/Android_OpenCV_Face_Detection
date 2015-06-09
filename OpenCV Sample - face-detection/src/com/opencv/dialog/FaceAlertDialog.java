@@ -52,10 +52,10 @@ public class FaceAlertDialog  {
 				    @Override
 				    public void onClick(DialogInterface dialog, int which) {
 				    	// Search Face 확정
-				    	cvCamera.setFaceMat(faceArray);
+				    	cvCamera.setSearchFaceMat(faceArray);
 				    	// Searching
 				    	pca.insertNewImages(faceArray);
-						//pca.searchPCA() ;
+						cvCamera.setSimilaFaceMat(pca.searchPCA(faceArray)) ;
 				    }
 				}) ;
 		alertBuilder.setNegativeButton("취소",

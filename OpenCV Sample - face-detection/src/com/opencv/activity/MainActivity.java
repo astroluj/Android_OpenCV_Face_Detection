@@ -106,7 +106,7 @@ public class MainActivity extends ActionBarActivity {
 						// is FAce Touch
 						isFaceTouch = true ;
 						
-						faceAlertDialog.setFaceArray (cvCamera.getFaceMat(faceArray)) ;
+						faceAlertDialog.setFaceArray (cvCamera.getSearchFaceMat(faceArray)) ;
 						faceAlertDialog.setSearchAlertBuilder("선택한 얼굴을 검색 하시겠습니까?") ;
 						faceAlertDialog.getAlertDialog().show() ;
 						
@@ -114,8 +114,10 @@ public class MainActivity extends ActionBarActivity {
 					}
 				}
 				// Face exception touch
-				if (isFaceTouch == false) 
-					cvCamera.setFaceMat(null);
+				if (isFaceTouch == false) {
+					cvCamera.setSearchFaceMat(null);
+					cvCamera.setSimilaFaceMat(null) ;
+				}
 			}
 
 			break;

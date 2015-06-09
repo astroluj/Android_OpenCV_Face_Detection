@@ -25,16 +25,21 @@ public final class DB {
 		try {
 			sqlDB = new DBHelper(context, DBUtil.DB_NAME, null,
 					DBUtil.DB_VERSION).getWritableDatabase() ;
+			
+			Log.d (TAG, "DB R/W Open") ;
 		} catch (Exception e) {
 			e.printStackTrace() ;
 			sqlDB = new DBHelper(context, DBUtil.DB_NAME, null,
 					DBUtil.DB_VERSION).getReadableDatabase() ;
+			
+			Log.d (TAG, "DB Read Only Open") ;
 		}
 		
 		return this;
 	}
 
 	public void close() {
+		Log.d (TAG, "DB Close") ;
 		sqlDB.close();
 	}
 	
