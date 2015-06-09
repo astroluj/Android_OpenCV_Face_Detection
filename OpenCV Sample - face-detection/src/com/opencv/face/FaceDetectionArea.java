@@ -17,6 +17,7 @@ public class FaceDetectionArea {
 	// Custom Class
 	private MenuValues menuValues ;
 	
+	private Rect[] facesArray ;
 	private Mat matRGBAlpha;
 	private Mat matGray;
 	
@@ -49,6 +50,14 @@ public class FaceDetectionArea {
 	}
 	synchronized public void setMatGray (Mat matGray) {
 		this.matGray = matGray ;
+	}
+	
+	// facesArray GetSet
+	public Rect[] getFacesArray () {
+		return this.facesArray ;
+	}
+	synchronized public void setFacesArray () {
+		this.facesArray = null ;
 	}
 	
 	// Face Detection
@@ -92,7 +101,7 @@ public class FaceDetectionArea {
 			}
 	
 			// faces list
-			Rect[] facesArray = faces.toArray() ;
+			facesArray = faces.toArray() ;
 			
 			// Rectangle draw near faces 
  			/*for (Rect faceArray : facesArray) {

@@ -1,4 +1,4 @@
-package com.opencv.sqlite.util;
+package com.opencv.util;
 
 import java.util.ArrayList;
 
@@ -11,6 +11,7 @@ public class DBUtil {
 	
 	// DB Name
 	public static final String DB_NAME = "PCA.db" ;
+	public static final String XML_NAME = "PCA.xml" ;
 	
 	// DB Version
 	public static final int DB_VERSION = 1 ;

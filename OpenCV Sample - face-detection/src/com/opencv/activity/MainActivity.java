@@ -2,9 +2,13 @@ package com.opencv.activity;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.core.Rect;
 
 import com.opencv.camera.CvCameraControll;
 import com.opencv.R;
+import com.opencv.pca.PCA;
+import com.opencv.sqlite.DB;
+import com.opencv.sqlite.ImagePathDB;
 import com.opencv.util.MenuValues;
 import com.opencv.util.MenuUtil;
 
@@ -13,6 +17,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.WindowManager;
 
 public class MainActivity extends ActionBarActivity {
@@ -20,6 +25,8 @@ public class MainActivity extends ActionBarActivity {
     private static final String    TAG                 = "PCA::Activity";
     
     // Custom Class
+	private DB db ;
+	private PCA pca ;
     private CvCameraControll cvCamera ;
     private MenuValues menuValues ;
     
@@ -41,20 +48,9 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.face_detect_surface_view);
 
         initializes () ;
-        
-        // MenuValues Initial
-    	menuValues = new MenuValues() ;
-    	
-    	// OpenCV Camera SurfaceView
-        openCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
-        
-    	// Parameter context, MenuValues
-        cvCamera = new CvCameraControll (getApplicationContext(), menuValues,
-        		openCvCameraView) ;
     }
     
     private void initializes () {
-
     	// Init
      	// face detector
         detectorTypeNames = new String[2];
@@ -71,9 +67,61 @@ public class MainActivity extends ActionBarActivity {
         skinColorDetectionStateNames[MenuUtil.START_DETECTION] = getString(R.string.start_skin_color_detection) ;
         skinColorDetectionStateNames[MenuUtil.STOP_DETECTION] = getString(R.string.stop_skin_color_detection) ;
         
+        db = new DB (getApplicationContext()) ;
+        
+        // MenuValues Initial
+    	menuValues = new MenuValues() ;
+    	
+    	// PCA Initial
+    	pca = new PCA (getApplicationContext()) ;
+    	
+    	// OpenCV Camera SurfaceView
+        openCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
+        
+    	// Parameter context, MenuValues
+        cvCamera = new CvCameraControll (getApplicationContext(), menuValues,
+        		openCvCameraView) ;
+        
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
     
+
+	// View Touch Event
+	public boolean onTouchEvent(MotionEvent event) {
+		super.onTouchEvent(event);
+		
+		// Multi Touch Accept
+		switch (event.getAction() & MotionEvent.ACTION_MASK) {
+		case MotionEvent.ACTION_DOWN: // Touching
+			
+			Rect[] facesArrays = cvCamera.getFacesArray() ;
+			if (facesArrays != null) {
+				boolean isFaceTouch = false ;
+				
+				for (Rect faceArray : facesArrays) {
+					if ((faceArray.x <= event.getX() && event.getX() <= faceArray.x + faceArray.width)
+							|| faceArray.y <= event.getY() && event.getY() <= faceArray.y + faceArray.height) {
+						Log.d (TAG, "Touch X : " + event.getX() + " Y : " + event.getY()) ;
+						
+						// is FAce Touch
+						isFaceTouch = true ;
+						
+						pca.insertNewImages(cvCamera.getFaceMat(faceArray));
+						//pca.searchPCA() ;
+						
+						break ;
+					}
+				}
+				// Face exception touch
+				if (isFaceTouch == false) 
+					cvCamera.setFaceMat();
+			}
+
+			break;
+		}
+		return true;
+	}
+	
     @Override
     public void onPause() {
         super.onPause();
@@ -227,6 +275,17 @@ public class MainActivity extends ActionBarActivity {
             
             if (type == MenuUtil.START_DETECTION) {
                 Log.i(TAG, "Detection starting");
+                
+            	// Default Image Insert
+                db.open() ;
+                int count = db.selectAll(ImagePathDB.TABLE_NAME).getCount() ;
+                db.close();
+                // DB 처음 데이터 입력하기
+                if (count == 0) {
+                	pca.insertDefaultImages () ;
+                	pca.studyDefaultImage () ;
+                }
+                
     			if (openCvCameraView != null) {
     				// register Listener
     				if (cvCamera == null) 

@@ -1,6 +1,6 @@
 package com.opencv.sqlite;
 
-import com.opencv.sqlite.util.DBUtil;
+import com.opencv.util.DBUtil;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -44,8 +44,6 @@ public final class DB {
 	}
 		
 	public long insert (String tableName, ContentValues contentValues) {
-		Log.d (TAG, "Insert "+ contentValues.getAsString(ImagePathDB.KEY_IMAGE_PATH)) ;
-		
 		return sqlDB.insert(tableName, null, contentValues) ;
 	}
 	
