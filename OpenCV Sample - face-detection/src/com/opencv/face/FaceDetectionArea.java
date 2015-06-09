@@ -12,7 +12,7 @@ import android.util.Log;
 
 public class FaceDetectionArea {
 
-	private static final String TAG = "OpenCV::FaceDetectionArea";
+	private static final String TAG = "PCA::FaceDetectionArea";
 	
 	// Custom Class
 	private MenuValues menuValues ;

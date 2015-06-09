@@ -1,4 +1,4 @@
-package com.sqlite.util;
+package com.opencv.sqlite.util;
 
 import java.util.ArrayList;
 
@@ -8,6 +8,7 @@ public class DBUtil {
 
 	// Default Image Path
 	public static final String PATH = Environment.getExternalStorageDirectory() +"/PCA_Image/" ;
+	
 	// DB Name
 	public static final String DB_NAME = "PCA.db" ;
 	

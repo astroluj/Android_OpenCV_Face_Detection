@@ -1,6 +1,6 @@
-package com.sqlite;
+package com.opencv.sqlite;
 
-import com.sqlite.util.DBUtil;
+import com.opencv.sqlite.util.DBUtil;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -12,7 +12,7 @@ import android.util.Log;
 // DB interface
 public final class DB {
 
-	private final String TAG = "sqlite:DB" ;
+	private final String TAG = "PCA::sqlite:DB" ;
 	
 	private SQLiteDatabase sqlDB ;
 	private Context context ;

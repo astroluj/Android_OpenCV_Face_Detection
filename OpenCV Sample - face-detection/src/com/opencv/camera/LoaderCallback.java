@@ -17,7 +17,7 @@ import android.util.Log;
 
 public class LoaderCallback extends BaseLoaderCallback {
 
-	private static final String TAG = "OpenCV::LoaderCallback";
+	private static final String TAG = "PCA::LoaderCallback";
 	
 	// Custom Class
 	private MenuValues menuValues ;

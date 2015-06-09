@@ -1,11 +1,5 @@
 package com.opencv.activity;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.CameraBridgeViewBase;
 
@@ -13,13 +7,7 @@ import com.opencv.camera.CvCameraControll;
 import com.opencv.R;
 import com.opencv.util.MenuValues;
 import com.opencv.util.MenuUtil;
-import com.sqlite.DB;
-import com.sqlite.ImagePathDB;
-import com.sqlite.util.DBUtil;
 
-import android.content.ContentValues;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -29,12 +17,11 @@ import android.view.WindowManager;
 
 public class MainActivity extends ActionBarActivity {
 
-    private static final String    TAG                 = "OpenCV::Activity";
+    private static final String    TAG                 = "PCA::Activity";
     
     // Custom Class
     private CvCameraControll cvCamera ;
     private MenuValues menuValues ;
-    private DB db ;
     
     private CameraBridgeViewBase  openCvCameraView;
 
@@ -84,58 +71,7 @@ public class MainActivity extends ActionBarActivity {
         skinColorDetectionStateNames[MenuUtil.START_DETECTION] = getString(R.string.start_skin_color_detection) ;
         skinColorDetectionStateNames[MenuUtil.STOP_DETECTION] = getString(R.string.stop_skin_color_detection) ;
         
-        // Default Image Insert
-        db = new DB (getApplicationContext()) ;
-        db.open() ;
-        // DB 처음 데이터 입력하기
-        if (db.selectAll(ImagePathDB.TABLE_NAME).getCount() == 0)
-        	insertDefaultImages () ;
-        
-        db.close();
         Log.i(TAG, "Instantiated new " + this.getClass());
-    }
-
-    // Default Image insert
-    private void insertDefaultImages () {
-    	
-    	for (int i = 1 ; i <= 20 ; i++) {
-    		
-    		// Directory Create
-    		File file = new File (DBUtil.PATH) ;
-			if (!file.isDirectory()) file.mkdirs() ;
-			
-    		OutputStream outputStream = null ;
-    		try {
-    			// file create
-    			outputStream = new FileOutputStream (DBUtil.PATH + "default_image_" + i + ".png") ;
-    			// Image Compress
-    			BitmapFactory.decodeResource(getResources(),
-    					getResources().getIdentifier("default_image_" + i, "drawable", "com.opencv"))
-    					.compress(Bitmap.CompressFormat.PNG, 100, outputStream) ;
-    			outputStream.flush(); 
-    			
-    			// DB Insert Path
-    			ContentValues contentValues = new ContentValues() ;
-    			contentValues.put(ImagePathDB.KEY_IMAGE_PATH,
-    					DBUtil.PATH + "default_image_" + i + ".png");
-    			db.insert(ImagePathDB.TABLE_NAME, contentValues) ;
-    		} catch (FileNotFoundException e) {
-    			e.printStackTrace();
-    			Log.e (TAG, "FileNotFound") ;
-    		} catch (IOException e) {
-    			e.printStackTrace();
-    			Log.e (TAG, "IOException") ;
-    		} finally {
-    			if (outputStream != null) {
-    				try {
-    					outputStream.close () ;
-    					outputStream = null ;
-    				} catch (IOException e) {
-    					outputStream = null ;
-    				}
-    			}
-    		}
-    	}
     }
     
     @Override

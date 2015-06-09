@@ -1,4 +1,4 @@
-package com.sqlite;
+package com.opencv.sqlite;
 
 import java.util.ArrayList;
 

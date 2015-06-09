@@ -1,11 +1,11 @@
-package com.sqlite;
+package com.opencv.sqlite;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.sqlite.util.DBUtil;
+import com.opencv.sqlite.util.DBUtil;
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -19,14 +19,11 @@ public class DBHelper extends SQLiteOpenHelper {
 		
 		db.execSQL(DBUtil.createTable (
 				ImagePathDB.TABLE_NAME, ImagePathDB.createQueryKeys())) ;
-		db.execSQL(DBUtil.createTable (
-				ImageAnalyzeDB.TABLE_NAME, ImageAnalyzeDB.createQueryKeys())) ;
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		db.execSQL("DROP TABLE IF EXISTS " + ImagePathDB.TABLE_NAME);
-		db.execSQL("DROP TABLE IF EXISTS " + ImageAnalyzeDB.TABLE_NAME);
 
 		onCreate(db);
 	}

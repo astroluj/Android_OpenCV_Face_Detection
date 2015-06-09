@@ -9,11 +9,10 @@ import org.opencv.imgproc.Imgproc;
 import android.util.Log;
 
 import com.opencv.util.MenuValues;
-import com.opencv.util.MenuUtil;
 
 public class SkinColorDetection extends RGB {
 
-	private static final String TAG = "OpenCV::SkinColorDetection";
+	private static final String TAG = "PCA::SkinColorDetection";
 	
 	// Custom Class
 	private ColorBlobDetector colorDetector ;
@@ -69,103 +68,8 @@ public class SkinColorDetection extends RGB {
 
 	        // Mat Mask
 	        colorDetector.process(this.matRGBAlpha) ;
-	     			
-	     	
-			/*Core.inRange(this.matRGBAlpha,
-					new Scalar (0, 133, 77), new Scalar (255, 173, 127),
-					this.matRGBAlpha);
-			// SkinColor Maps
-			byte[] gaussianR = new byte[util.SKIN_MAP_SIZE],
-					gaussianG = new byte[util.SKIN_MAP_SIZE] ;
-				
-			gaussianProcess (gaussianR,
-					avgColor.val[0] -5, avgColor.val[0] + 5,
-					util.SKIN_DEV_R * util.SKIN_DEV_R) ;
-			gaussianProcess (gaussianG,
-					avgColor.val[1] -5, avgColor.val[1] + 5,
-					util.SKIN_DEV_G * util.SKIN_DEV_G) ;
-			// NormalizationRGB
-			normalizationRGB (matSkinColor) ;
-			// ConvertToGrayScale
-			convertToGrayScale (gaussianR, gaussianG) ;*/
 		} catch (Exception e) {}
 		
 		return this.matRGBAlpha ;
-	}
-	
-	// ConvertToGrasyScale
-	private boolean convertToGrayScale (byte[] gaussianR, byte[] gaussianG) {
-		try {
-			//skin color 지역을 gray image로 바꿔주는 작업 
-			for (int i = 0, rows = this.matRGBAlpha.rows() ; i < rows ; i++) {
-				for (int j = 0, cols = this.matRGBAlpha.cols() ; j < cols ; j++) {
-					int[] data = new int[1] ;
-					data[0] = (gaussianR[(int) this.getNormalizeR(i,  j)] & 0xff)
-							* (gaussianG[(int) this.getNormalizeG(i,  j)] & 0xff) / 255 ;
-
-					//this.matGray.put(i, j, data) ;
-				}
-			}
-		} catch (Exception e) {
-			return false ;
-		}
-		
-		return true ;
-	}
-	
-	// Normalization RGB
-	private void normalizationRGB (Mat matRoi) {
-		
-		// RGB -> norR, norG, norB
-		
-		for (int i = 0, height = matRoi.height() ; i < height ; i++) {
-			for (int j = 0, width = matRoi.width() ; j < width ; j++) {
-				
-				// R + G + B
-				Scalar scalarColors = Core.sumElems (this.matRGBAlpha.submat(new Rect (j, i, 1, 1))) ;
-				double sumRGB = scalarColors.val[0] +  scalarColors.val[1] + scalarColors.val[2] ;
-				
-				if  (sumRGB > MenuUtil.SUM_RGB) 
-					this.setNormalizeRGB(i, j,
-							// R
-							(MenuUtil.MAX_SCALAR * scalarColors.val[0] / sumRGB),
-							// G
-							(MenuUtil.MAX_SCALAR * scalarColors.val[1] / sumRGB),
-							// B
-							(MenuUtil.MAX_SCALAR * scalarColors.val[2] / sumRGB)) ;
-					
-				else // sumRGB <= util.SUM_RGB
-					this.setNormalizeRGB(i, j, 0, 0, 0) ;
-			}
-		}
-	}
-	
-	// Gaussian Processing 
-	private void gaussianProcess (byte[]gaussianColor,
-			double skinLow, double skinHigh, double dev) {
-
-		double[] temp = new double[MenuUtil.SKIN_MAP_SIZE] ;
-
-		for (int i = 0 ; i < MenuUtil.SKIN_MAP_SIZE ;  i++) {
-			if (i < skinLow)
-				temp[i] = Math.exp(-1. * ((double)i - skinLow) * ((double)i - skinLow) / dev) ;
-			else if (i >= skinLow && i <= skinHigh)
-				temp[i] =  1.0 ;
-			else
-				temp[i] = Math.exp(-1. * ((double)i - skinHigh) * ((double)i - skinHigh) / dev) ;
-		}
-
-		double min = 1.0 ;
-		double max = 0.0 ;	
-
-		for (int i = 0 ; i < MenuUtil.SKIN_MAP_SIZE ; i++) {
-			if ( temp[i] < min ) min = temp[i] ;
-			if ( temp[i] > max )	max = temp[i] ;
-		}
-
-		double mag = max - min;
-
-		for(int i = 0 ; i < MenuUtil.SKIN_MAP_SIZE ; i++) 
-			gaussianColor[i] = (byte)((temp[i] - min) / mag * 255) ;
 	}
 }
