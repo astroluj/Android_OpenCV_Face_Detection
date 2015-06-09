@@ -52,13 +52,13 @@ public class CvCameraControll implements CvCameraViewListener2 {
 	// FaceDetectionArea Frame GetSet
 	synchronized public Mat getFaceMat (Rect faceArray) {
 		
-		searchMat = faceDetectionArea.getMatRGBAlpha().clone().submat(faceArray) ;
+		Mat searchMat = faceDetectionArea.getMatRGBAlpha().clone().submat(faceArray) ;
 		Imgproc.resize(searchMat, searchMat, CVUtil.ROI_FACE_SIZE) ;
 		
-		return this.searchMat ;
+		return searchMat ;
 	}
-	synchronized public void setFaceMat () {
-		this.searchMat = null ;
+	synchronized public void setFaceMat (Mat searchMat) {
+		this.searchMat = searchMat ;
 	}
 	
 	public void onCameraViewStarted(int width, int height) {

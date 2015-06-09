@@ -5,8 +5,8 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Rect;
 
 import com.opencv.camera.CvCameraControll;
+import com.opencv.dialog.FaceAlertDialog;
 import com.opencv.R;
-import com.opencv.pca.PCA;
 import com.opencv.sqlite.DB;
 import com.opencv.sqlite.ImagePathDB;
 import com.opencv.util.MenuValues;
@@ -26,7 +26,7 @@ public class MainActivity extends ActionBarActivity {
     
     // Custom Class
 	private DB db ;
-	private PCA pca ;
+	private FaceAlertDialog faceAlertDialog ;
     private CvCameraControll cvCamera ;
     private MenuValues menuValues ;
     
@@ -72,9 +72,6 @@ public class MainActivity extends ActionBarActivity {
         // MenuValues Initial
     	menuValues = new MenuValues() ;
     	
-    	// PCA Initial
-    	pca = new PCA (getApplicationContext()) ;
-    	
     	// OpenCV Camera SurfaceView
         openCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         
@@ -82,6 +79,9 @@ public class MainActivity extends ActionBarActivity {
         cvCamera = new CvCameraControll (getApplicationContext(), menuValues,
         		openCvCameraView) ;
         
+     // FaceAlertDialog Initial
+    	faceAlertDialog = new FaceAlertDialog (MainActivity.this, getApplicationContext(), cvCamera) ;
+    	
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
     
@@ -106,15 +106,16 @@ public class MainActivity extends ActionBarActivity {
 						// is FAce Touch
 						isFaceTouch = true ;
 						
-						pca.insertNewImages(cvCamera.getFaceMat(faceArray));
-						//pca.searchPCA() ;
+						faceAlertDialog.setFaceArray (cvCamera.getFaceMat(faceArray)) ;
+						faceAlertDialog.setSearchAlertBuilder("선택한 얼굴을 검색 하시겠습니까?") ;
+						faceAlertDialog.getAlertDialog().show() ;
 						
 						break ;
 					}
 				}
 				// Face exception touch
 				if (isFaceTouch == false) 
-					cvCamera.setFaceMat();
+					cvCamera.setFaceMat(null);
 			}
 
 			break;
@@ -275,15 +276,15 @@ public class MainActivity extends ActionBarActivity {
             
             if (type == MenuUtil.START_DETECTION) {
                 Log.i(TAG, "Detection starting");
-                
+				
             	// Default Image Insert
                 db.open() ;
                 int count = db.selectAll(ImagePathDB.TABLE_NAME).getCount() ;
                 db.close();
                 // DB 처음 데이터 입력하기
                 if (count == 0) {
-                	pca.insertDefaultImages () ;
-                	pca.studyDefaultImage () ;
+                	faceAlertDialog.setInitialAlertBuilder("기본 이미지 정보를 입력 하시겠습니까?") ;
+    				faceAlertDialog.getAlertDialog().show() ;
                 }
                 
     			if (openCvCameraView != null) {
