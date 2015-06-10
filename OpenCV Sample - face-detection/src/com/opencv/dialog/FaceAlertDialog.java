@@ -45,7 +45,7 @@ public class FaceAlertDialog  {
 		
 		this.alertBuilder = new AlertDialog.Builder(this.alertContext);
 		try {
-			Bitmap.createScaledBitmap(findedFace,
+			findedFace= Bitmap.createScaledBitmap(findedFace,
 					CVUtil.ROI_FACE_LENGTH, CVUtil.ROI_FACE_LENGTH, true) ;
 			
 			ImageView imageView = new ImageView (context) ;
