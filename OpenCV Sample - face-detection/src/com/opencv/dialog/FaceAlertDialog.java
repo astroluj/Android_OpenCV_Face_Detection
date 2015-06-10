@@ -4,9 +4,12 @@ import org.opencv.core.Mat;
 
 import com.opencv.camera.CvCameraControll;
 import com.opencv.pca.PCA;
+import com.opencv.util.CVUtil;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.widget.ImageView;
 import android.app.AlertDialog;
 
 public class FaceAlertDialog  {
@@ -28,12 +31,6 @@ public class FaceAlertDialog  {
 		
 		// PCA Initial
     	this.pca = new PCA (this.context) ;
-		this.alertBuilder = new AlertDialog.Builder(this.alertContext);
-	}
-	
-	// AlertDialog Get
-	public AlertDialog getAlertDialog () {
-		return this.alert ;
 	}
 	
 	// Search Face Set
@@ -41,8 +38,54 @@ public class FaceAlertDialog  {
 		this.faceArray = faceArray ;
 	}
 	
+	// Search FAce shows
+	private void showSearchFace (Bitmap findedFace) {
+		
+		if (alert != null && alert.isShowing()) alert.dismiss(); 
+		
+		this.alertBuilder = new AlertDialog.Builder(this.alertContext);
+		try {
+			Bitmap.createScaledBitmap(findedFace,
+					CVUtil.ROI_FACE_LENGTH, CVUtil.ROI_FACE_LENGTH, true) ;
+			
+			ImageView imageView = new ImageView (context) ;
+			imageView.setImageBitmap(findedFace) ;
+			
+			alertBuilder.setMessage("얼굴이 일치 합니까?(아니오 누를 시 현재 얼굴 저장)") ;
+			alertBuilder.setView(imageView) ;
+			
+			alertBuilder.setNegativeButton("아니요",
+					new DialogInterface.OnClickListener() {
+					    @Override
+					    public void onClick(DialogInterface dialog, int which) {
+					    	
+					    	pca.insertNewImages(faceArray) ;
+					    }
+					});
+		} catch (NullPointerException e) {
+			alertBuilder.setMessage("일치하는 얼굴이 없습니다. 현재 얼굴을 저장합니다.") ;
+		}
+		
+		// 공통 사항
+ 		alertBuilder.setCancelable(true) ;
+		
+		alertBuilder.setPositiveButton("예",
+				new DialogInterface.OnClickListener() {
+				    @Override
+				    public void onClick(DialogInterface dialog, int which) {
+				    }
+				}) ;
+		
+		alert = alertBuilder.create() ;
+		alert.show() ;
+	}
+	
 	// Search Face Alert
 	public void setSearchAlertBuilder (String msg) {
+		
+		if (alert != null && alert.isShowing()) alert.dismiss(); 
+		
+		this.alertBuilder = new AlertDialog.Builder(this.alertContext);
 		
 		alertBuilder.setMessage(msg) ;
 		alertBuilder.setCancelable(true) ;
@@ -54,24 +97,31 @@ public class FaceAlertDialog  {
 				    	// Search Face 확정
 				    	cvCamera.setSearchFaceMat(faceArray);
 				    	// Searching
-				    	pca.insertNewImages(faceArray);
-						cvCamera.setSimilaFaceMat(pca.searchPCA(faceArray)) ;
+				    	pca.studyImage () ;
+						try {
+							showSearchFace(pca.searchPCA(faceArray)) ;
+						} catch (Exception e) {
+							showSearchFace ( null) ;
+						}
 				    }
 				}) ;
 		alertBuilder.setNegativeButton("취소",
 				new DialogInterface.OnClickListener() {
 				    @Override
 				    public void onClick(DialogInterface dialog, int which) {
-				    	
-				    	return;
 				    }
 				});
 		
 		alert = alertBuilder.create() ;
+		alert.show() ;
 	}
 
 	// Initial FAce Alert
 	public void setInitialAlertBuilder (String msg) {
+		
+		if (alert != null && alert.isShowing()) alert.dismiss(); 
+		
+		this.alertBuilder = new AlertDialog.Builder(this.alertContext);
 		
 		alertBuilder.setMessage(msg) ;
 		alertBuilder.setCancelable(true) ;
@@ -81,18 +131,16 @@ public class FaceAlertDialog  {
 				    @Override
 				    public void onClick(DialogInterface dialog, int which) {
 				    	pca.insertDefaultImages () ;
-	                	pca.studyDefaultImage () ;
 				    }
 				}) ;
 		alertBuilder.setNegativeButton("취소",
 				new DialogInterface.OnClickListener() {
 				    @Override
 				    public void onClick(DialogInterface dialog, int which) {
-				    	
-				    	return;
 				    }
 				});
 		
 		alert = alertBuilder.create() ;
+		alert.show() ;
 	}
 }

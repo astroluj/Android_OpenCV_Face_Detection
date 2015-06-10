@@ -12,7 +12,6 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.highgui.Highgui;
-import org.opencv.imgproc.Imgproc;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -22,19 +21,18 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import com.opencv.sqlite.DB;
-import com.opencv.sqlite.ImageAnalyzeDB;
 import com.opencv.sqlite.ImagePathDB;
 import com.opencv.util.CVUtil;
 import com.opencv.util.DBUtil;
 
-public class PCA {
+public class PCA extends MatControll {
 
 	private static final String TAG = "PCA::PCA";
 	
 	// Custom Class
 	private DB db ;
 	
-	private Mat mean ;
+	private Mat mean, eigenFace, omega ;
 	private Context context ;
 	
 	public PCA (Context context) {
@@ -45,107 +43,63 @@ public class PCA {
 	}
 	
 	// 찾기
-	public Mat searchPCA (Mat searchMat) {
-		// 1) DB읽어오기
-		db.open () ;
-		
-		// 기존 DB에서 값 가져옴
-		Mat eigenFace = new Mat (), omega = new Mat () ;
-		Cursor cursor = db.selectAll(ImageAnalyzeDB.TABLE_NAME) ;
-		
-		cursor.moveToFirst() ;
-		for (int i = 0 ; i < cursor.getCount() ; i++) {
-			
-			cursor.moveToNext() ;
-		}
-		
-		cursor.close () ;
-		db.close () ;
-		
-		/*
-		eigenFace.convertTo(eigenFace, CvType.CV_64FC1) ;
-		omega.convertTo(omega, CvType.CV_64FC1) ;
+	public Bitmap searchPCA (Mat searchMat) {
 		
 		// 2) 테스트영상 불러오기
-		Imgproc.cvtColor(searchMat, searchMat, Imgproc.COLOR_RGB2GRAY);
-    	Imgproc.resize(searchMat, searchMat, CVUtil.IMAGE_SIZE);
-    	searchMat = searchMat.reshape(0, 1) ;
-    	searchMat.convertTo(searchMat, CvType.CV_64FC1) ;
-    	
+
+		Mat newMat =  searchMat.clone()  ;
+		newMat = reshapreMat(newMat) ;
+		
 		// 3) 테스트영상 정규화
-		Core.subtract(searchMat, mean, searchMat) ;
+		Core.subtract(newMat, mean, newMat) ;
 		
 		// 4) 벡터공간에 정규화된 테스트영상 투영
-		Core.gemm(searchMat, eigenFace, 1, new Mat (), 0, searchMat) ;
+		Core.gemm(newMat, eigenFace.t(), 1, new Mat (), 0, newMat) ;
 		
 		// 5) weight값 계산
 		Mat weightMat = new Mat (), subtract = new Mat () ;
 		for (int i = 0 ; i < omega.rows() ; i++) {
-			Core.subtract(searchMat, omega.row(i), subtract) ;
+			Core.subtract(newMat, omega.row(i), subtract) ;
 			weightMat.push_back(subtract) ;
 		}
+		weightMat.convertTo(weightMat, CvType.CV_64FC1) ;
 			
 		// 6) 가장 근접한 weight값 찾기
-		double[][] distance = new double[weightMat.rows()][weightMat.cols()] ;
-		
-		for (int i = 0 ; i < distance.length ; i++) {
-			for (int j = 0 ; j < distance[i].length ; j++) {
-				
-			}
-		}
-		
 		// DB KEY_INDEX Eqaul
-		int index = minimumIndex (distance (distance, distance.length, distance[0].length),
-				distance[0].length) +1 ;
-				*/
+		int index = minimumIndex (distance (weightMat), weightMat.cols()) +1 ;
+				
+		Log.d (TAG, index +"") ;
 		String filePath = "" ;
 		db.open() ;
-		cursor = db.selectAll(ImagePathDB.TABLE_NAME) ;
+		Cursor cursor = db.selectAll(ImagePathDB.TABLE_NAME) ;
 		cursor.moveToFirst() ;
-		cursor.moveToLast() ;
-		filePath = cursor.getString(1) ;
+		for (int i = 1 ; i <= cursor.getCount() ; i++) {
+			if (index == i) {
+				filePath = cursor.getString(1) ;
+				
+				break ;
+			}
+			
+			cursor.moveToNext() ;
+		}
 		cursor.close () ;
 		db.close(); 
 		
 		Log.d (TAG, "Expose Similar Image : " + filePath) ;
 		
+		// Mat Release 
+		newMat.release() ;
+		weightMat.release();
+		mean.release() ;
+		eigenFace.release(); 
+		omega.release();
+		
 		// 근접한 이미지
-		return Highgui.imread(filePath,
-				Highgui.IMREAD_COLOR | Highgui.IMREAD_COLOR) ;
-	}
-	
-	// 최소거리의 인덱스 반환하는 함수
-	private int minimumIndex (double[] dist, int size) {
-		double min = CVUtil.DBL_MAX ;
-		int minIndex = size ;
-		
-		for (int i = 0 ; i < size ; i++) {
-			if (min > dist[i]) {
-				min = dist[i] ;
-				minIndex = i ;
-			}
-		}
-		
-		return minIndex ;
-	}
-	
-	// 거리구하는 함수
-	private double[] distance(double[][] distance, int row, int col) {
-		double[] dist = new double[col] ;
-		
-		for (int i = 0 ; i <col ; i++) {
-			double sum = 0 ;
-			for (int j = 0 ; j < row ; j++) {
-				sum += distance[i][j] * distance[i][j];
-			}
-			dist[i] = Math.sqrt(sum) ;
-		}
-		
-		return dist ;
+		return BitmapFactory.decodeFile(filePath) ;
 	}
 	
 	// 새로운 이미지 학습
-	public void studyDefaultImage () {
+	public void studyImage () {
     	try {
 	    	//1.학습
 	    	// 1) 학습데이터 불러오기 
@@ -155,17 +109,14 @@ public class PCA {
 	        Cursor cursor = db.selectAll(ImagePathDB.TABLE_NAME) ;
 	
 	        cursor.moveToFirst() ;
-	        for (int i = 0 ; i < cursor.getCount() ; i++) {
+	        int count = cursor.getCount() ;
+	        for (int i = 0 ; i < count ; i++) {
 	        	String filePath = cursor.getString(1) ;
 	        	Log.d (TAG, "Image Path : " + filePath) ;
 	        	
 	        	Mat grayMat = Highgui.imread(filePath,
 	        			Highgui.IMREAD_ANYDEPTH | Highgui.IMREAD_ANYCOLOR) ;
-	        	Imgproc.cvtColor(grayMat, grayMat, Imgproc.COLOR_RGB2GRAY);
-	        	//Imgproc.resize(grayMat, grayMat, CVUtil.IMAGE_SIZE);
-	        	
-	        	grayMat = grayMat.reshape(0, 1) ;
-	        	grayMat.convertTo(grayMat, CvType.CV_64FC1) ;
+	        	grayMat = reshapreMat(grayMat) ;
 	        	studyMat.push_back(grayMat) ;
 	        	
 	        	cursor.moveToNext() ;
@@ -177,7 +128,7 @@ public class PCA {
 	        mean = studyMat.row(0).clone() ;
 	        for (int i = 1 ; i < studyMat.rows() ; i++)
 	        	Core.add(mean, studyMat.row(i), mean) ;
-	        Core.divide(mean, new Scalar(20), mean, 1) ;
+	        Core.divide(mean, new Scalar(count), mean, 1) ;
 	    
 	        // 3) 벡터공간 만들기 및 벡터공간 정규화
 	        Mat vecSPC = new Mat (), subtract = new Mat () ;
@@ -185,6 +136,7 @@ public class PCA {
 	        	Core.subtract(studyMat.row(i), mean, subtract) ;
 	        	vecSPC.push_back(subtract) ;
 	        }
+	        
 	        // 4) 공분산계산 정사각형 만들기
 	        Mat cov = new Mat () ;
 	        Core.gemm(vecSPC, vecSPC.t(), 1, new Mat (), 0, cov) ;
@@ -194,28 +146,18 @@ public class PCA {
 	        Core.eigen(cov, true, eigenValues, eigenVectors) ;
 	    
 	        // 6) 벡터공간에 eigen_face투영
-	        Mat eigenFace = new Mat (), omega = new Mat () ;
+	        eigenFace = new Mat () ;
+			omega = new Mat () ;
 	        Core.gemm(eigenVectors, vecSPC, 1, new Mat (), 0, eigenFace) ;
 	        Core.gemm(vecSPC, eigenFace.t(), 1, new Mat (), 0, omega) ;
 	    
-	        // 7) DB저장
-	        db.open () ;
-	        for (int i = 0 ; i < omega.rows() ; i++) {
-		        ContentValues  contentValues = new ContentValues () ;
-		        contentValues.put(ImageAnalyzeDB.KEY_EIGEN_DATA, eigenFace.row(i).dump ()) ;
-		        contentValues.put(ImageAnalyzeDB.KEY_OMEGA_DATA, omega.row(i).dump ()) ;
-		        
-		        db.insert(ImageAnalyzeDB.TABLE_NAME, contentValues) ;
-	        }
-	        db.close () ;
+	        // 7) DB저장 안함 읽을 때 너무 오래걸림
 	        
 	        subtract.release() ;
 	        eigenVectors.release() ;
 	        eigenValues.release() ;
 	        cov.release() ;
 	        vecSPC.release() ;
-	        eigenFace.release() ; 
-	        omega.release() ;
     	} catch (Exception e) {
     		e.printStackTrace();
     	} finally {

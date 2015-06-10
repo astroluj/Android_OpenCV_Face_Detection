@@ -19,14 +19,14 @@ public class DBHelper extends SQLiteOpenHelper {
 		
 		db.execSQL(DBUtil.createTable (
 				ImagePathDB.TABLE_NAME, ImagePathDB.createQueryKeys())) ;
-		db.execSQL(DBUtil.createTable (
-				ImageAnalyzeDB.TABLE_NAME, ImageAnalyzeDB.createQueryKeys())) ;
+		//db.execSQL(DBUtil.createTable (
+			//	ImageAnalyzeDB.TABLE_NAME, ImageAnalyzeDB.createQueryKeys())) ;
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		db.execSQL("DROP TABLE IF EXISTS " + ImagePathDB.TABLE_NAME);
-		db.execSQL("DROP TABLE IF EXISTS " + ImageAnalyzeDB.TABLE_NAME);
+		//db.execSQL("DROP TABLE IF EXISTS " + ImageAnalyzeDB.TABLE_NAME);
 
 		onCreate(db);
 	}

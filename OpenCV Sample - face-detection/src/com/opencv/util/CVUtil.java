@@ -8,8 +8,9 @@ public class CVUtil {
 	// Line width
 	public static final int LINE_WIDTH = 3 ;
 	// ImageSize
-	public static final int IMAGE_LENGTH = 20 ;
-	public static final Size IMAGE_SIZE = new Size (20, 20) ;
+	public static final int IMAGE_LENGTH = 32 ;
+	public static final Size IMAGE_SIZE = new Size (32, 32) ;
+	public static final int ROI_FACE_LENGTH = 200 ;
 	public static final Size ROI_FACE_SIZE = new Size (200, 200) ;
 	
 	// DBL_MAX

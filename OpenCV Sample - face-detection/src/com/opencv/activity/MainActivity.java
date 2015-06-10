@@ -108,16 +108,13 @@ public class MainActivity extends ActionBarActivity {
 						
 						faceAlertDialog.setFaceArray (cvCamera.getSearchFaceMat(faceArray)) ;
 						faceAlertDialog.setSearchAlertBuilder("선택한 얼굴을 검색 하시겠습니까?") ;
-						faceAlertDialog.getAlertDialog().show() ;
 						
 						break ;
 					}
 				}
 				// Face exception touch
-				if (isFaceTouch == false) {
+				if (isFaceTouch == false) 
 					cvCamera.setSearchFaceMat(null);
-					cvCamera.setSimilaFaceMat(null) ;
-				}
 			}
 
 			break;
@@ -284,10 +281,9 @@ public class MainActivity extends ActionBarActivity {
                 int count = db.selectAll(ImagePathDB.TABLE_NAME).getCount() ;
                 db.close();
                 // DB 처음 데이터 입력하기
-                if (count == 0) {
+                if (count == 0) 
                 	faceAlertDialog.setInitialAlertBuilder("기본 이미지 정보를 입력 하시겠습니까?") ;
-    				faceAlertDialog.getAlertDialog().show() ;
-                }
+                
                 
     			if (openCvCameraView != null) {
     				// register Listener

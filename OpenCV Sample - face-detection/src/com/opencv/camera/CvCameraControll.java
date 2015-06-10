@@ -29,7 +29,7 @@ public class CvCameraControll implements CvCameraViewListener2 {
 	private LoaderCallback  loaderCallback ;
 	private MenuValues menuValues ;
 	
-	private Mat searchMat, similarMat ;
+	private Mat searchMat ;
 	
 	private Context context ;
     
@@ -61,18 +61,6 @@ public class CvCameraControll implements CvCameraViewListener2 {
 		} catch (NullPointerException e) {}
 	}
 	
-	// FaceDetectionArea SimilarFace GetSet
-	synchronized public Mat getSimilarFaceMat () {
-		return this.similarMat ;
-	}
-	synchronized public void setSimilaFaceMat (Mat similarMat) {
-		
-		try {
-			this.similarMat = similarMat ;
-			Imgproc.resize(this.similarMat, this.similarMat, CVUtil.ROI_FACE_SIZE) ;
-		} catch (NullPointerException e) {}
-	}
-		
 	public void onCameraViewStarted(int width, int height) {
 		Log.i(TAG, "onCameraViewStarted");
 		// Construct Gray Scale
@@ -119,15 +107,6 @@ public class CvCameraControll implements CvCameraViewListener2 {
  				Mat roi = faceDetectionArea.getMatRGBAlpha()
  						.submat(0, searchMat.rows(), 0, searchMat.cols()) ;
  				searchMat.copyTo(roi) ;
- 				
- 				// SimilarMat Shows
- 	 			if (similarMat != null) {
- 	 				Log.d (TAG, "A") ;
- 	 				roi = faceDetectionArea.getMatRGBAlpha()
- 	 						.submat(0, similarMat.rows(), similarMat.cols(),
- 	 								similarMat.cols() + similarMat.cols()) ;
- 	 				similarMat.copyTo(roi) ;
- 	 			}
  			}
  			
  			return faceDetectionArea.getMatRGBAlpha() ;
