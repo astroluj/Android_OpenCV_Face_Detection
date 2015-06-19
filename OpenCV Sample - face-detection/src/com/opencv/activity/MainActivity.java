@@ -12,15 +12,15 @@ import com.opencv.sqlite.ImagePathDB;
 import com.opencv.util.MenuValues;
 import com.opencv.util.MenuUtil;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
     private static final String    TAG                 = "PCA::Activity";
     
